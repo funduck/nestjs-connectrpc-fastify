@@ -26,6 +26,12 @@ This example shows:
 $ pnpm install
 ```
 
+To compile proto files if you change them
+```bash
+$ pnpm run compile-proto
+```
+
+
 ## Compile and run the project
 
 ```bash
