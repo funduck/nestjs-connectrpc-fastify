@@ -6,10 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "postinstall": "npx buf config init",
-    "build": "nest build",
+    "postinstall": "pnpm run compile-proto",
     "compile-proto": "npx buf dep update; npx buf lint; npx buf generate",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "test": "npx tsx test/server-and-client.ts"
   },
   "dependencies": {

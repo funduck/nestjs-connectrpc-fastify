@@ -5,7 +5,7 @@
 
 [x] create routes for connectrpc
 
-setup test that starts server and client and checks that connectrpc is working
+[x] setup test that starts server and client and checks that connectrpc is working
 
 --- after this point start implementing Nextjs integration -- 
 
