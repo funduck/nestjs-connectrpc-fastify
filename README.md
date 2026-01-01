@@ -32,16 +32,9 @@ $ pnpm run compile-proto
 ```
 
 
-## Compile and run the project
+## Compile and run the test
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+$ pnpm run test
 ```
 
