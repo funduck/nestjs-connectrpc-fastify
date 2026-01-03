@@ -9,7 +9,7 @@
 
 --- after this point start implementing Nextjs integration -- 
 
-
+[x] working binding for simple method
 
 --- add more rpcs ---
 
@@ -20,3 +20,7 @@ implement these rpcs in server
 add client calls to these methods
 
 update test
+
+provide config options in ConnectrpcModule 
+
+refactor project to library

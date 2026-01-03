@@ -5,8 +5,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { Logger } from '@nestjs/common';
-import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
-import { connectRpcRoutes } from './connectrpc.routes';
+import { ConnectrpcModule } from './connectrpc/connectrpc.module';
 
 export async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -16,16 +15,11 @@ export async function bootstrap() {
 
   const logger = app.get(Logger);
 
-  const server = app.getHttpAdapter().getInstance();
+  logger.log('App created');
 
-  await server.register(fastifyConnectPlugin, {
-    grpc: false, // disable grpc
-    grpcWeb: false, // disable grpc-web
-    connect: true, // we only use connect
-    // interceptors: [createValidateInterceptor()], // skip validation for performance
-    acceptCompression: [], // skip compression for performance
-    routes: connectRpcRoutes,
-  });
+  await app.get(ConnectrpcModule).registerPlugin();
+
+  logger.log('Server is starting...');
 
   const port = process.env.PORT || 3000;
   await app.listen(port);

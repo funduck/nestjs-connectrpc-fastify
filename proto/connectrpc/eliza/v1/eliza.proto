@@ -15,6 +15,12 @@ message SayResponse {
   string sentence = 1;
 }
 
+message SayResponses {
+  repeated SayResponse responses = 1;
+}
+
 service ElizaService {
   rpc Say(SayRequest) returns (SayResponse) {}
+  rpc SayMany(stream SayRequest) returns (SayResponses) {}
+  rpc ListenMany(SayRequest) returns (stream SayResponse) {}
 }

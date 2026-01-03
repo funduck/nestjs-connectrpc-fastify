@@ -11,7 +11,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file connectrpc/eliza/v1/eliza.proto.
  */
 export const file_connectrpc_eliza_v1_eliza: GenFile = /*@__PURE__*/
-  fileDesc("Ch9jb25uZWN0cnBjL2VsaXphL3YxL2VsaXphLnByb3RvEhNjb25uZWN0cnBjLmVsaXphLnYxIioKClNheVJlcXVlc3QSHAoIc2VudGVuY2UYASABKAlCCrpIB3IFEAEY+gEiHwoLU2F5UmVzcG9uc2USEAoIc2VudGVuY2UYASABKAkyWgoMRWxpemFTZXJ2aWNlEkoKA1NheRIfLmNvbm5lY3RycGMuZWxpemEudjEuU2F5UmVxdWVzdBogLmNvbm5lY3RycGMuZWxpemEudjEuU2F5UmVzcG9uc2UiAGIGcHJvdG8z", [file_buf_validate_validate]);
+  fileDesc("Ch9jb25uZWN0cnBjL2VsaXphL3YxL2VsaXphLnByb3RvEhNjb25uZWN0cnBjLmVsaXphLnYxIioKClNheVJlcXVlc3QSHAoIc2VudGVuY2UYASABKAlCCrpIB3IFEAEY+gEiHwoLU2F5UmVzcG9uc2USEAoIc2VudGVuY2UYASABKAkiQwoMU2F5UmVzcG9uc2VzEjMKCXJlc3BvbnNlcxgBIAMoCzIgLmNvbm5lY3RycGMuZWxpemEudjEuU2F5UmVzcG9uc2UyggIKDEVsaXphU2VydmljZRJKCgNTYXkSHy5jb25uZWN0cnBjLmVsaXphLnYxLlNheVJlcXVlc3QaIC5jb25uZWN0cnBjLmVsaXphLnYxLlNheVJlc3BvbnNlIgASUQoHU2F5TWFueRIfLmNvbm5lY3RycGMuZWxpemEudjEuU2F5UmVxdWVzdBohLmNvbm5lY3RycGMuZWxpemEudjEuU2F5UmVzcG9uc2VzIgAoARJTCgpMaXN0ZW5NYW55Eh8uY29ubmVjdHJwYy5lbGl6YS52MS5TYXlSZXF1ZXN0GiAuY29ubmVjdHJwYy5lbGl6YS52MS5TYXlSZXNwb25zZSIAMAFiBnByb3RvMw", [file_buf_validate_validate]);
 
 /**
  * @generated from message connectrpc.eliza.v1.SayRequest
@@ -48,6 +48,23 @@ export const SayResponseSchema: GenMessage<SayResponse> = /*@__PURE__*/
   messageDesc(file_connectrpc_eliza_v1_eliza, 1);
 
 /**
+ * @generated from message connectrpc.eliza.v1.SayResponses
+ */
+export type SayResponses = Message<"connectrpc.eliza.v1.SayResponses"> & {
+  /**
+   * @generated from field: repeated connectrpc.eliza.v1.SayResponse responses = 1;
+   */
+  responses: SayResponse[];
+};
+
+/**
+ * Describes the message connectrpc.eliza.v1.SayResponses.
+ * Use `create(SayResponsesSchema)` to create a new message.
+ */
+export const SayResponsesSchema: GenMessage<SayResponses> = /*@__PURE__*/
+  messageDesc(file_connectrpc_eliza_v1_eliza, 2);
+
+/**
  * @generated from service connectrpc.eliza.v1.ElizaService
  */
 export const ElizaService: GenService<{
@@ -56,6 +73,22 @@ export const ElizaService: GenService<{
    */
   say: {
     methodKind: "unary";
+    input: typeof SayRequestSchema;
+    output: typeof SayResponseSchema;
+  },
+  /**
+   * @generated from rpc connectrpc.eliza.v1.ElizaService.SayMany
+   */
+  sayMany: {
+    methodKind: "client_streaming";
+    input: typeof SayRequestSchema;
+    output: typeof SayResponsesSchema;
+  },
+  /**
+   * @generated from rpc connectrpc.eliza.v1.ElizaService.ListenMany
+   */
+  listenMany: {
+    methodKind: "server_streaming";
     input: typeof SayRequestSchema;
     output: typeof SayResponseSchema;
   },
