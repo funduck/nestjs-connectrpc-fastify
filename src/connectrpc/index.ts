@@ -7,5 +7,6 @@ export { Controller } from './decorators';
 // Export interface for type-safe service implementation
 export type { Service } from './interfaces';
 
-// Export configuration interfaces
+// Export configuration interfaces and helpers
 export type { ModuleOptions, MiddlewareConfig } from './interfaces';
+export { middleware } from './interfaces';

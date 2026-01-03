@@ -29,7 +29,7 @@ export class ConnectrpcModule {
           useValue: options,
         },
         // Register middleware classes as providers so they can be injected
-        ...(options.middleware?.map((config) => config.use) || []),
+        ...(options.middlewares?.map((config) => config.use) || []),
       ],
       exports: [CONNECTRPC_MODULE_OPTIONS],
     };
@@ -62,12 +62,17 @@ export class ConnectrpcModule {
     const server = fastifyAdapter.getInstance();
 
     // Apply configured middleware to ConnectRPC routes
-    const middlewareConfigs = this.options.middleware || [];
+    const middlewareConfigs = this.options.middlewares || [];
     this.logger.log(
       `Found ${middlewareConfigs.length} middleware configurations to apply`,
     );
 
     for (const config of middlewareConfigs) {
+      // Convert method names to set with PascalCase
+      const methods = new Set(
+        (config.methods || []).map((m) => m[0].toUpperCase() + m.slice(1)),
+      );
+
       const middlewareInstance = this.moduleRef.get(config.use, {
         strict: false,
       });
@@ -96,10 +101,8 @@ export class ConnectrpcModule {
           }
 
           // Check if middleware should apply to this method
-          if (config.methods && config.methods.length > 0) {
-            if (!config.methods.includes(methodName)) {
-              return;
-            }
+          if (methods.size && !methods.has(methodName)) {
+            return;
           }
 
           // Apply the middleware

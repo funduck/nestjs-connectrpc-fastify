@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
 import { ConnectrpcController } from './connectrpc.controller';
-import { ConnectrpcModule } from './connectrpc/connectrpc.module';
+import { ConnectrpcModule, middleware } from './connectrpc';
 import { LoggerMiddleware } from './logger.middleware';
 import { AuthMiddleware } from './auth.middleware';
 import { ElizaService } from '../gen/connectrpc/eliza/v1/eliza_pb';
@@ -12,22 +12,14 @@ import { DurationMiddleware } from './duration.middleware';
 @Module({
   imports: [
     ConnectrpcModule.forRoot({
-      middleware: [
+      middlewares: [
         // Example 1: Apply to all services and all methods
-        {
-          use: LoggerMiddleware,
-        },
+        middleware(LoggerMiddleware),
         // Example 2: Apply to specific service only
-        {
-          use: AuthMiddleware,
-          on: ElizaService,
-        },
+        middleware(AuthMiddleware, ElizaService),
         // Example 3: Apply to specific methods of a service
-        {
-          use: DurationMiddleware,
-          on: ElizaService,
-          methods: ['SayMany'],
-        },
+        middleware(DurationMiddleware, ElizaService, ['sayMany']),
+        middleware(DurationMiddleware, ElizaService, ['listenMany']),
       ],
       // Optional: Configure protocol options
       connect: true,

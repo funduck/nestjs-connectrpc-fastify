@@ -59,26 +59,64 @@ export type ServiceMethodNames<T> =
     : never;
 
 /**
- * Middleware configuration for ConnectRPC routes
+ * Middleware configuration for ConnectRPC routes - without service specified
  */
-export interface MiddlewareConfig<T extends GenService<any> = any> {
+export type MiddlewareConfigGlobal = {
   /**
    * The middleware class to apply
    */
   use: Type<NestMiddleware>;
 
   /**
-   * Optional: The service to apply middleware to.
-   * If omitted, middleware applies to all services.
+   * Middleware applies to all services and all methods
    */
-  on?: T;
+  on?: never;
+  methods?: never;
+};
+
+/**
+ * Middleware configuration for ConnectRPC routes - with service specified
+ */
+export type MiddlewareConfigForService<T extends GenService<any>> = {
+  /**
+   * The middleware class to apply
+   */
+  use: Type<NestMiddleware>;
+
+  /**
+   * The service to apply middleware to
+   */
+  on: T;
 
   /**
    * Optional: Specific method names to apply middleware to.
-   * If omitted, middleware applies to all methods of the service(s).
-   * Method names should match the protobuf method names (e.g., 'Say', 'SayMany')
+   * If omitted, middleware applies to all methods of the service.
+   * Method names should match the protobuf method names (e.g., 'say', 'sayMany')
    */
-  methods?: ServiceMethodNames<T>[];
+  methods?: Array<ServiceMethodNames<T>>;
+};
+
+/**
+ * Middleware configuration for ConnectRPC routes
+ */
+export type MiddlewareConfig =
+  | MiddlewareConfigGlobal
+  | MiddlewareConfigForService<any>;
+
+/**
+ * Helper function to create a type-safe middleware configuration
+ * This ensures proper type inference for method names based on the service
+ */
+export function middleware<T extends GenService<any>>(
+  use: Type<NestMiddleware>,
+  on?: T,
+  methods?: Array<ServiceMethodNames<T>>,
+): MiddlewareConfig {
+  return {
+    use,
+    on,
+    methods,
+  };
 }
 
 /**
@@ -88,7 +126,7 @@ export interface ModuleOptions {
   /**
    * Middleware configurations to apply to ConnectRPC routes
    */
-  middleware?: MiddlewareConfig[];
+  middlewares?: MiddlewareConfig[];
 
   /**
    * Whether to enable gRPC protocol (default: false)
