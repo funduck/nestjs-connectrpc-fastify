@@ -69,14 +69,18 @@ export function Controller<T extends GenServiceMethods>(
       target,
     );
 
+    const debug = process.env.DEBUG == 'true';
+
     // Log what we found
-    console.log(
-      `Registering controller ${target.name} for service ${service.typeName}`,
-    );
-    for (const [serviceName, controllerMethodName] of Object.entries(
-      methodMappings,
-    )) {
-      console.log(`  ${serviceName} -> ${controllerMethodName}`);
+    if (debug) {
+      console.log(
+        `Registering controller ${target.name} for service ${service.typeName}`,
+      );
+      for (const [serviceName, controllerMethodName] of Object.entries(
+        methodMappings,
+      )) {
+        console.log(`  ${serviceName} -> ${controllerMethodName}`);
+      }
     }
 
     ControllersStore.push({

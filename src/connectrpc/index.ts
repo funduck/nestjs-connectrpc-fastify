@@ -2,7 +2,10 @@
 export { ConnectrpcModule } from './connectrpc.module';
 
 // Export decorators
-export { Controller } from './controller.decorator';
+export { Controller } from './decorators';
 
 // Export interface for type-safe service implementation
-export type { Service } from './service.interface';
+export type { Service } from './interfaces';
+
+// Export configuration interfaces
+export type { ModuleOptions, MiddlewareConfig } from './interfaces';

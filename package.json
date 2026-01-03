@@ -8,7 +8,7 @@
   "scripts": {
     "postinstall": "pnpm run compile-proto",
     "compile-proto": "npx buf dep update; npx buf lint; npx buf generate",
-    "test": "npx tsx test/server-and-client.ts"
+    "test": "DEBUG=true npx tsx test/server-and-client.ts"
   },
   "dependencies": {
     "@bufbuild/buf": "^1.62.1",
@@ -21,6 +21,7 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-fastify": "^11.1.11",
+    "fastify": "^5.6.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },

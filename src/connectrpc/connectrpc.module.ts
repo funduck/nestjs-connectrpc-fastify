@@ -1,9 +1,13 @@
 import { ConnectRouter } from '@connectrpc/connect';
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
-import { Inject, Logger, Module } from '@nestjs/common';
+import { DynamicModule, Inject, Logger, Module } from '@nestjs/common';
 import { HttpAdapterHost, ModuleRef } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { ControllersStore } from './metadata';
+import { convertMiddlewareToHook } from './helpers';
+import type { ModuleOptions } from './interfaces';
+
+const CONNECTRPC_MODULE_OPTIONS = Symbol('CONNECTRPC_MODULE_OPTIONS');
 
 @Module({})
 export class ConnectrpcModule {
@@ -12,12 +16,33 @@ export class ConnectrpcModule {
   });
   private readonly logger = ConnectrpcModule.logger;
 
+  /**
+   * Configure the ConnectRPC module with options
+   */
+  static forRoot(options: ModuleOptions = {}): DynamicModule {
+    return {
+      module: ConnectrpcModule,
+      global: true,
+      providers: [
+        {
+          provide: CONNECTRPC_MODULE_OPTIONS,
+          useValue: options,
+        },
+        // Register middleware classes as providers so they can be injected
+        ...(options.middleware?.map((config) => config.use) || []),
+      ],
+      exports: [CONNECTRPC_MODULE_OPTIONS],
+    };
+  }
+
   // For injections
   constructor(
     @Inject(HttpAdapterHost)
     private readonly httpAdapterHost: HttpAdapterHost,
     @Inject(ModuleRef)
     private readonly moduleRef: ModuleRef,
+    @Inject(CONNECTRPC_MODULE_OPTIONS)
+    private readonly options: ModuleOptions,
   ) {}
 
   // For binding router to server
@@ -36,6 +61,65 @@ export class ConnectrpcModule {
 
     const server = fastifyAdapter.getInstance();
 
+    // Apply configured middleware to ConnectRPC routes
+    const middlewareConfigs = this.options.middleware || [];
+    this.logger.log(
+      `Found ${middlewareConfigs.length} middleware configurations to apply`,
+    );
+
+    for (const config of middlewareConfigs) {
+      const middlewareInstance = this.moduleRef.get(config.use, {
+        strict: false,
+      });
+
+      if (middlewareInstance && typeof middlewareInstance.use === 'function') {
+        const hook = convertMiddlewareToHook(middlewareInstance);
+
+        // Create a filtered hook that checks service and method
+        const filteredHook = async (request: any, reply: any) => {
+          const url = request.url as string;
+
+          // Parse the URL to get service and method
+          // Format: /package.ServiceName/MethodName
+          const match = url.match(/^\/([^/]+)\/([^/]+)$/);
+
+          if (!match) {
+            // Not a ConnectRPC route, skip
+            return;
+          }
+
+          const [, serviceName, methodName] = match;
+
+          // Check if middleware should apply to this service
+          if (config.on && config.on.typeName !== serviceName) {
+            return;
+          }
+
+          // Check if middleware should apply to this method
+          if (config.methods && config.methods.length > 0) {
+            if (!config.methods.includes(methodName)) {
+              return;
+            }
+          }
+
+          // Apply the middleware
+          await hook(request, reply);
+        };
+
+        server.addHook('onRequest', filteredHook);
+
+        const serviceInfo = config.on
+          ? ` to service ${config.on.typeName}`
+          : ' to all services';
+        const methodInfo = config.methods
+          ? ` methods [${config.methods.join(', ')}]`
+          : ' all methods';
+        this.logger.log(
+          `Applied middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
+        );
+      }
+    }
+
     // Create implementations from controller instances
     const implementations = new Map<Function, any>();
 
@@ -52,7 +136,7 @@ export class ConnectrpcModule {
 
       // Bind each method from the service
       for (const methodDesc of service.methods) {
-        const { methodKind, name } = methodDesc;
+        const { name } = methodDesc;
         const methodName = name[0].toLowerCase() + name.slice(1);
 
         // Check if there's a mapped controller method
@@ -73,38 +157,6 @@ export class ConnectrpcModule {
               `Method ${controllerMethodName} not found in ${target.name}`,
             );
           }
-        } else {
-          // No mapped method - create default error implementation
-          switch (methodKind) {
-            case 'unary':
-              implementation[methodName] = async (req: any, context: any) => {
-                throw new Error(
-                  `Method ${name} not implemented in controller ${target.name}`,
-                );
-              };
-              break;
-            case 'client_streaming':
-              implementation[methodName] = async (req: any, context: any) => {
-                throw new Error(
-                  `Method ${name} not implemented in controller ${target.name}`,
-                );
-              };
-              break;
-            case 'server_streaming':
-              implementation[methodName] = async function* (
-                req: any,
-                context: any,
-              ) {
-                throw new Error(
-                  `Method ${name} not implemented in controller ${target.name}`,
-                );
-              };
-              break;
-            case 'bidi_streaming':
-              throw new Error(
-                `Bidirectional streaming not supported as it requires HTTP/2`,
-              );
-          }
         }
       }
 
@@ -124,26 +176,13 @@ export class ConnectrpcModule {
       return;
     }
 
-    // Remove the default JSON parser to avoid conflict with Connect-RPC
-    // Connect-RPC will add its own no-op parsers for the content types it needs
-    // if (server.hasContentTypeParser('application/json')) {
-    //   server.removeContentTypeParser('application/json');
-    // }
-
     await server.register(fastifyConnectPlugin, {
-      grpc: false, // disable grpc
-      grpcWeb: false, // disable grpc-web
-      connect: true, // we only use connect
-      // interceptors: [createValidateInterceptor()], // skip validation for performance
-      acceptCompression: [], // skip compression for performance
+      grpc: this.options.grpc ?? false,
+      grpcWeb: this.options.grpcWeb ?? false,
+      connect: this.options.connect ?? true,
+      acceptCompression: this.options.acceptCompression ?? [],
       routes: routes,
     });
-
-    // if (!server.hasContentTypeParser('application/json')) {
-    //   throw new Error(
-    //     `Something went wrong, ConnectRPC was supposed to register a JSON parser`,
-    //   );
-    // }
 
     this.logger.log('Ready');
   }

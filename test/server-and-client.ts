@@ -14,13 +14,23 @@ const transport = createConnectTransport({
 
 export const client = createClient(ElizaService, transport);
 
+const mockAuthorizationToken = 'Bearer mock-token-123';
+
 async function testUnary() {
   console.log('\n=== Testing Unary RPC: Say ===');
   const sentence = 'Hello ConnectRPC!';
   console.log(`Request: "${sentence}"`);
 
   try {
-    const response = await client.say({ sentence });
+    const response = await client.say(
+      { sentence },
+      {
+        headers: {
+          Authorization: mockAuthorizationToken,
+          'x-request-id': 'unary-test-001',
+        },
+      },
+    );
     console.log(`Response: "${response.sentence}"`);
     console.log('✅ Unary RPC test passed\n');
     return true;
@@ -44,7 +54,12 @@ async function testClientStreaming() {
       }
     }
 
-    const response = await client.sayMany(generateRequests());
+    const response = await client.sayMany(generateRequests(), {
+      headers: {
+        Authorization: mockAuthorizationToken,
+        'x-request-id': 'client-streaming-test-001',
+      },
+    });
     console.log(`Received ${response.responses.length} responses:`);
     response.responses.forEach((resp, idx) => {
       console.log(`  [${idx + 1}] ${resp.sentence}`);
@@ -65,7 +80,15 @@ async function testServerStreaming() {
 
   try {
     let count = 0;
-    for await (const response of client.listenMany({ sentence })) {
+    for await (const response of client.listenMany(
+      { sentence },
+      {
+        headers: {
+          Authorization: mockAuthorizationToken,
+          'x-request-id': 'server-streaming-test-001',
+        },
+      },
+    )) {
       count++;
       console.log(`  [${count}] ${response.sentence}`);
     }

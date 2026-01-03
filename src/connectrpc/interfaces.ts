@@ -1,4 +1,6 @@
+import { NestMiddleware, Type } from '@nestjs/common';
 import type { GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
+import { Compression } from '@connectrpc/connect/protocol';
 
 /**
  * Extract the input type from a method schema
@@ -48,3 +50,63 @@ export type Service<T> =
         [K in keyof Methods]?: ServiceMethod<Methods[K]>;
       }
     : never;
+
+export type ServiceMethodNames<T> =
+  T extends GenService<infer Methods>
+    ? {
+        [K in keyof Methods]: K;
+      }[keyof Methods]
+    : never;
+
+/**
+ * Middleware configuration for ConnectRPC routes
+ */
+export interface MiddlewareConfig<T extends GenService<any> = any> {
+  /**
+   * The middleware class to apply
+   */
+  use: Type<NestMiddleware>;
+
+  /**
+   * Optional: The service to apply middleware to.
+   * If omitted, middleware applies to all services.
+   */
+  on?: T;
+
+  /**
+   * Optional: Specific method names to apply middleware to.
+   * If omitted, middleware applies to all methods of the service(s).
+   * Method names should match the protobuf method names (e.g., 'Say', 'SayMany')
+   */
+  methods?: ServiceMethodNames<T>[];
+}
+
+/**
+ * Options for configuring ConnectRPC module
+ */
+export interface ModuleOptions {
+  /**
+   * Middleware configurations to apply to ConnectRPC routes
+   */
+  middleware?: MiddlewareConfig[];
+
+  /**
+   * Whether to enable gRPC protocol (default: false)
+   */
+  grpc?: boolean;
+
+  /**
+   * Whether to enable gRPC-Web protocol (default: false)
+   */
+  grpcWeb?: boolean;
+
+  /**
+   * Whether to enable Connect protocol (default: true)
+   */
+  connect?: boolean;
+
+  /**
+   * Compression formats to accept (default: [])
+   */
+  acceptCompression?: Compression[];
+}

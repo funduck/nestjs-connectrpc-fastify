@@ -13,14 +13,16 @@
 
 --- add more rpcs ---
 
-add to proto rpc with stream in response/request
+[x] add to proto rpc with stream in response/request
 
-implement these rpcs in server
+[x] implement these rpcs in server
 
-add client calls to these methods
+[x] add client calls to these methods
 
-update test
+[x] update test
 
 provide config options in ConnectrpcModule 
+
+allow using middleware
 
 refactor project to library
