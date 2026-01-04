@@ -45,8 +45,7 @@ export class ConnectrpcModule {
     private readonly options: ModuleOptions,
   ) {}
 
-  // For binding router to server
-  async registerPlugin() {
+  private getServer() {
     const httpAdapter = this.httpAdapterHost.httpAdapter;
 
     if (!httpAdapter) {
@@ -60,68 +59,12 @@ export class ConnectrpcModule {
     const fastifyAdapter = httpAdapter as FastifyAdapter;
 
     const server = fastifyAdapter.getInstance();
+    return server;
+  }
 
-    // Apply configured middleware to ConnectRPC routes
-    const middlewareConfigs = this.options.middlewares || [];
-    this.logger.log(
-      `Found ${middlewareConfigs.length} middleware configurations to apply`,
-    );
-
-    for (const config of middlewareConfigs) {
-      // Convert method names to set with PascalCase
-      const methods = new Set(
-        (config.methods || []).map((m) => m[0].toUpperCase() + m.slice(1)),
-      );
-
-      const middlewareInstance = this.moduleRef.get(config.use, {
-        strict: false,
-      });
-
-      if (middlewareInstance && typeof middlewareInstance.use === 'function') {
-        const hook = convertMiddlewareToHook(middlewareInstance);
-
-        // Create a filtered hook that checks service and method
-        const filteredHook = async (request: any, reply: any) => {
-          const url = request.url as string;
-
-          // Parse the URL to get service and method
-          // Format: /package.ServiceName/MethodName
-          const match = url.match(/^\/([^/]+)\/([^/]+)$/);
-
-          if (!match) {
-            // Not a ConnectRPC route, skip
-            return;
-          }
-
-          const [, serviceName, methodName] = match;
-
-          // Check if middleware should apply to this service
-          if (config.on && config.on.typeName !== serviceName) {
-            return;
-          }
-
-          // Check if middleware should apply to this method
-          if (methods.size && !methods.has(methodName)) {
-            return;
-          }
-
-          // Apply the middleware
-          await hook(request, reply);
-        };
-
-        server.addHook('onRequest', filteredHook);
-
-        const serviceInfo = config.on
-          ? ` to service ${config.on.typeName}`
-          : ' to all services';
-        const methodInfo = config.methods
-          ? ` methods [${config.methods.join(', ')}]`
-          : ' all methods';
-        this.logger.log(
-          `Applied middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
-        );
-      }
-    }
+  /** This must be called after app is initialized and before server starts listening */
+  async registerPlugin() {
+    const server = this.getServer();
 
     // Create implementations from controller instances
     const implementations = new Map<Function, any>();
@@ -192,6 +135,76 @@ export class ConnectrpcModule {
     });
 
     this.logger.log('Ready');
+  }
+
+  private async registerMiddlewares() {
+    const server = this.getServer();
+
+    // Apply configured middleware to ConnectRPC routes
+    const middlewareConfigs = this.options.middlewares || [];
+    this.logger.log(
+      `Found ${middlewareConfigs.length} middleware configurations to apply`,
+    );
+
+    for (const config of middlewareConfigs) {
+      // Convert method names to set with PascalCase
+      const methods = new Set(
+        (config.methods || []).map((m) => m[0].toUpperCase() + m.slice(1)),
+      );
+
+      const middlewareInstance = this.moduleRef.get(config.use, {
+        strict: false,
+      });
+
+      if (middlewareInstance && typeof middlewareInstance.use === 'function') {
+        const hook = convertMiddlewareToHook(middlewareInstance);
+
+        // Create a filtered hook that checks service and method
+        const filteredHook = async (request: any, reply: any) => {
+          const url = request.url as string;
+
+          // Parse the URL to get service and method
+          // Format: /package.ServiceName/MethodName
+          const match = url.match(/^\/([^/]+)\/([^/]+)$/);
+
+          if (!match) {
+            // Not a ConnectRPC route, skip
+            return;
+          }
+
+          const [, serviceName, methodName] = match;
+
+          // Check if middleware should apply to this service
+          if (config.on && config.on.typeName !== serviceName) {
+            return;
+          }
+
+          // Check if middleware should apply to this method
+          if (methods.size && !methods.has(methodName)) {
+            return;
+          }
+
+          // Apply the middleware
+          await hook(request, reply);
+        };
+
+        server.addHook('onRequest', filteredHook);
+
+        const serviceInfo = config.on
+          ? ` to service ${config.on.typeName}`
+          : ' to all services';
+        const methodInfo = config.methods
+          ? ` methods [${config.methods.join(', ')}]`
+          : ' all methods';
+        this.logger.log(
+          `Applied middleware: ${config.use.name}${serviceInfo}${methodInfo}`,
+        );
+      }
+    }
+  }
+
+  async onModuleInit() {
+    await this.registerMiddlewares();
   }
 
   // For cleanup
