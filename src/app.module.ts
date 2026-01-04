@@ -21,10 +21,6 @@ import { DurationMiddleware } from './duration.middleware';
         middleware(DurationMiddleware, ElizaService, ['sayMany']),
         middleware(DurationMiddleware, ElizaService, ['listenMany']),
       ],
-      // Optional: Configure protocol options
-      connect: true,
-      grpc: false,
-      grpcWeb: false,
       acceptCompression: [],
     }),
   ],

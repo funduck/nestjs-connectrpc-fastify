@@ -180,9 +180,13 @@ export class ConnectrpcModule {
     }
 
     await server.register(fastifyConnectPlugin, {
-      grpc: this.options.grpc ?? false,
-      grpcWeb: this.options.grpcWeb ?? false,
-      connect: this.options.connect ?? true,
+      // For now we enable only Connect protocol by default and disable others.
+      // grpc: this.options.grpc ?? false,
+      // grpcWeb: this.options.grpcWeb ?? false,
+      // connect: this.options.connect ?? true,
+      grpc: false,
+      grpcWeb: false,
+      connect: true,
       acceptCompression: this.options.acceptCompression ?? [],
       routes: routes,
     });

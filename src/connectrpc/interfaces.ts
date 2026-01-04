@@ -128,20 +128,21 @@ export interface ModuleOptions {
    */
   middlewares?: MiddlewareConfig[];
 
-  /**
-   * Whether to enable gRPC protocol (default: false)
-   */
-  grpc?: boolean;
+  // For now we enable only Connect protocol by default and disable others.
+  // /**
+  //  * Whether to enable gRPC protocol (default: false)
+  //  */
+  // grpc?: boolean;
 
-  /**
-   * Whether to enable gRPC-Web protocol (default: false)
-   */
-  grpcWeb?: boolean;
+  // /**
+  //  * Whether to enable gRPC-Web protocol (default: false)
+  //  */
+  // grpcWeb?: boolean;
 
-  /**
-   * Whether to enable Connect protocol (default: true)
-   */
-  connect?: boolean;
+  // /**
+  //  * Whether to enable Connect protocol (default: true)
+  //  */
+  // connect?: boolean;
 
   /**
    * Compression formats to accept (default: [])
