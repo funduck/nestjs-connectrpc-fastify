@@ -29,7 +29,7 @@ import { DurationMiddleware } from './duration.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // This middleware only applies to regular HTTP routes, not ConnectRPC
+    // Applying middlewares to REST HTTP routes
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

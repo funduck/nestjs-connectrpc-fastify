@@ -21,8 +21,10 @@
 
 [x] update test
 
-provide config options in ConnectrpcModule 
+[x] provide config options in ConnectrpcModule 
 
-allow using middleware
+[x] allow using middleware
 
+[] allow using guards
+ 
 refactor project to library

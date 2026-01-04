@@ -1,13 +1,16 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
+  private logger = new Logger(LoggerMiddleware.name);
+
+  constructor() {
+    this.logger.log('initialized');
+  }
+
   use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {
-    console.log('=== LoggerMiddleware triggered ===');
-    console.log('Request type:', req.constructor.name);
-    console.log('Response type:', res.constructor.name);
-    console.log(
+    this.logger.log(
       JSON.stringify(
         {
           method: req.method,
@@ -18,7 +21,6 @@ export class LoggerMiddleware implements NestMiddleware {
         2,
       ),
     );
-    console.log('=================================');
     next();
   }
 }
