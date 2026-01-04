@@ -63,7 +63,7 @@ export type ServiceMethodNames<T> =
  */
 export type MiddlewareConfigGlobal = {
   /**
-   * The middleware class to apply
+   * The middleware class to apply (must be decorated with @Middleware())
    */
   use: Type<NestMiddleware>;
 
@@ -79,7 +79,7 @@ export type MiddlewareConfigGlobal = {
  */
 export type MiddlewareConfigForService<T extends GenService<any>> = {
   /**
-   * The middleware class to apply
+   * The middleware class to apply (must be decorated with @Middleware())
    */
   use: Type<NestMiddleware>;
 

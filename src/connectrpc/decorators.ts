@@ -1,8 +1,8 @@
 import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 
 import { CONTROLLER_METADATA_KEY } from './constants';
-import { ControllersStore } from './metadata';
-import { Injectable } from '@nestjs/common';
+import { ControllersStore, MiddlewareStore } from './metadata';
+import { Injectable, Type, NestMiddleware } from '@nestjs/common';
 
 export type ServiceType<T extends GenServiceMethods> = GenService<T>;
 

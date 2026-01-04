@@ -25,7 +25,14 @@ import { DurationMiddleware } from './duration.middleware';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, Logger, ConnectrpcController],
+  providers: [
+    AppService,
+    Logger,
+    ConnectrpcController,
+    LoggerMiddleware,
+    AuthMiddleware,
+    DurationMiddleware,
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

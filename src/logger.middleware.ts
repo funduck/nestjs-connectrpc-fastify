@@ -1,12 +1,15 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { MiddlewareStore } from './connectrpc';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
   private logger = new Logger(LoggerMiddleware.name);
 
   constructor() {
-    this.logger.log('initialized');
+    MiddlewareStore.registerInstance(this, {
+      allowMultipleInstances: true,
+    });
   }
 
   use(req: FastifyRequest['raw'], res: FastifyReply['raw'], next: () => void) {

@@ -10,3 +10,6 @@ export type { Service } from './interfaces';
 // Export configuration interfaces and helpers
 export type { ModuleOptions, MiddlewareConfig } from './interfaces';
 export { middleware } from './interfaces';
+
+// Export metadata stores
+export { MiddlewareStore } from './metadata';

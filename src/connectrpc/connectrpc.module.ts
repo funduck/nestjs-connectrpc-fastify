@@ -3,7 +3,7 @@ import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { DynamicModule, Inject, Logger, Module } from '@nestjs/common';
 import { HttpAdapterHost, ModuleRef } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
-import { ControllersStore } from './metadata';
+import { ControllersStore, MiddlewareStore } from './metadata';
 import { convertMiddlewareToHook } from './helpers';
 import type { ModuleOptions } from './interfaces';
 
@@ -28,8 +28,6 @@ export class ConnectrpcModule {
           provide: CONNECTRPC_MODULE_OPTIONS,
           useValue: options,
         },
-        // Register middleware classes as providers so they can be injected
-        ...(options.middlewares?.map((config) => config.use) || []),
       ],
       exports: [CONNECTRPC_MODULE_OPTIONS],
     };
@@ -152,11 +150,17 @@ export class ConnectrpcModule {
         (config.methods || []).map((m) => m[0].toUpperCase() + m.slice(1)),
       );
 
-      const middlewareInstance = this.moduleRef.get(config.use, {
-        strict: false,
-      });
+      // Get the middleware instance from the store
+      const middlewareInstance = MiddlewareStore.getInstance(config.use);
 
-      if (middlewareInstance && typeof middlewareInstance.use === 'function') {
+      if (!middlewareInstance) {
+        this.logger.warn(
+          `Middleware ${config.use.name} not found in store. Did you forget to add MiddlewareStore.registerInstance(this) in the constructor? Or did you forget to instantiate the middleware?`,
+        );
+        continue;
+      }
+
+      if (typeof middlewareInstance.use === 'function') {
         const hook = convertMiddlewareToHook(middlewareInstance);
 
         // Create a filtered hook that checks service and method
