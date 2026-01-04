@@ -5,7 +5,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { Logger } from '@nestjs/common';
-import { ConnectrpcModule } from './connectrpc/connectrpc.module';
+import { ConnectRPCModule } from './nestjs-connectrpc-fastify/connectrpc.module';
 
 export async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -17,7 +17,7 @@ export async function bootstrap() {
 
   logger.log('App created');
 
-  await app.get(ConnectrpcModule).registerPlugin();
+  await app.get(ConnectRPCModule).registerPlugin();
 
   logger.log('Server is starting...');
 

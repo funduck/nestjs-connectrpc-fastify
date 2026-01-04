@@ -9,12 +9,12 @@ import {
   SayResponsesSchema,
 } from 'gen/connectrpc/eliza/v1/eliza_pb';
 import { create } from '@bufbuild/protobuf';
-import { Controller, Service } from './connectrpc';
+import { ConnectRPC, Service } from './connectrpc-fastify';
 
-@Controller({
-  service: ElizaService,
-})
 export class ConnectrpcController implements Service<typeof ElizaService> {
+  constructor() {
+    ConnectRPC.registerController(this, ElizaService);
+  }
   /**
    * Unary RPC: Say
    * Client sends one request, server sends one response

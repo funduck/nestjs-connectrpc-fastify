@@ -1,11 +1,45 @@
 import { GenService } from '@bufbuild/protobuf/codegenv2';
 import { NestMiddleware, Type } from '@nestjs/common';
 
-export const ControllersStore: Array<{
-  target: Function;
-  service: GenService<any>;
-  methodMappings: Record<string, string>; // Maps service method name to controller method name
-}> = [];
+class ControllersStoreClass {
+  private controllers = new Map<
+    Type<any>,
+    {
+      instance: any;
+      service: GenService<any>;
+    }
+  >();
+
+  values() {
+    return Array.from(this.controllers.entries()).map(([target, data]) => ({
+      target,
+      ...data,
+    }));
+  }
+
+  registerInstance(
+    self: Function,
+    service: GenService<any>,
+    {
+      allowMultipleInstances = false,
+    }: {
+      allowMultipleInstances?: boolean;
+    } = {},
+  ) {
+    const controllerClass = self.constructor as Type<any>;
+    if (!allowMultipleInstances && this.controllers.has(controllerClass)) {
+      throw new Error(
+        `Controller ${controllerClass.name} is already registered! This may happen if you export controller as provider and also register it in some Nest module.`,
+      );
+    }
+    this.controllers.set(controllerClass, {
+      instance: self,
+      service,
+    });
+  }
+}
+
+export const ControllersStore = new ControllersStoreClass();
 
 /**
  * Store for middleware classes and their instances

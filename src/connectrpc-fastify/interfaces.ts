@@ -1,6 +1,25 @@
-import { NestMiddleware, Type } from '@nestjs/common';
 import type { GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
-import { Compression } from '@connectrpc/connect/protocol';
+import { FastifyReply, FastifyRequest } from 'fastify';
+
+export interface Logger {
+  log: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+  debug: (...args: any[]) => void;
+  verbose: (...args: any[]) => void;
+}
+
+export interface Middleware {
+  use(
+    req: FastifyRequest['raw'],
+    res: FastifyReply['raw'],
+    next: (err?: any) => void,
+  ): void;
+}
+
+export interface Type<T = any> extends Function {
+  new (...args: any[]): T;
+}
 
 /**
  * Extract the input type from a method schema
@@ -35,8 +54,11 @@ type ServiceMethod<T> = T extends { methodKind: 'unary' }
  *
  * Usage:
  * ```typescript
- * @Controller({ service: ElizaService })
  * export class ElizaController implements ConnectRPCService<typeof ElizaService> {
+ *   constructor() {
+ *     ConnectRPC.registerController(this, ElizaService);
+ *   }
+ *
  *   async say(request: SayRequest): Promise<SayResponse> {
  *     // implementation
  *   }
@@ -65,7 +87,7 @@ export type MiddlewareConfigGlobal = {
   /**
    * The middleware class to apply (must be decorated with @Middleware())
    */
-  use: Type<NestMiddleware>;
+  use: Type<Middleware>;
 
   /**
    * Middleware applies to all services and all methods
@@ -81,7 +103,7 @@ export type MiddlewareConfigForService<T extends GenService<any>> = {
   /**
    * The middleware class to apply (must be decorated with @Middleware())
    */
-  use: Type<NestMiddleware>;
+  use: Type<Middleware>;
 
   /**
    * The service to apply middleware to
@@ -108,7 +130,7 @@ export type MiddlewareConfig =
  * This ensures proper type inference for method names based on the service
  */
 export function middleware<T extends GenService<any>>(
-  use: Type<NestMiddleware>,
+  use: Type<Middleware>,
   on?: T,
   methods?: Array<ServiceMethodNames<T>>,
 ): MiddlewareConfig {
@@ -117,35 +139,4 @@ export function middleware<T extends GenService<any>>(
     on,
     methods,
   };
-}
-
-/**
- * Options for configuring ConnectRPC module
- */
-export interface ModuleOptions {
-  /**
-   * Middleware configurations to apply to ConnectRPC routes
-   */
-  middlewares?: MiddlewareConfig[];
-
-  // For now we enable only Connect protocol by default and disable others.
-  // /**
-  //  * Whether to enable gRPC protocol (default: false)
-  //  */
-  // grpc?: boolean;
-
-  // /**
-  //  * Whether to enable gRPC-Web protocol (default: false)
-  //  */
-  // grpcWeb?: boolean;
-
-  // /**
-  //  * Whether to enable Connect protocol (default: true)
-  //  */
-  // connect?: boolean;
-
-  /**
-   * Compression formats to accept (default: [])
-   */
-  acceptCompression?: Compression[];
 }

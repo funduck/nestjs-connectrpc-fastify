@@ -3,15 +3,17 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
 import { ConnectrpcController } from './connectrpc.controller';
-import { ConnectrpcModule, middleware } from './connectrpc';
+import { middleware } from './connectrpc-fastify';
 import { LoggerMiddleware } from './logger.middleware';
 import { AuthMiddleware } from './auth.middleware';
 import { ElizaService } from '../gen/connectrpc/eliza/v1/eliza_pb';
 import { DurationMiddleware } from './duration.middleware';
+import { ConnectRPCModule } from './nestjs-connectrpc-fastify';
 
 @Module({
   imports: [
-    ConnectrpcModule.forRoot({
+    ConnectRPCModule.forRoot({
+      logger: new Logger('ConnectRPC', { timestamp: true }),
       middlewares: [
         // Example 1: Apply to all services and all methods
         middleware(LoggerMiddleware),
