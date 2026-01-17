@@ -37,6 +37,7 @@ $ pnpm run compile-proto
 $ pnpm run test
 ```
 
-<video width="900" controls>
-  <source src="tests.mp4" type="video/mp4">
-</video>
+## Test output
+![alt text](image.png)
+![alt text](image-1.png)
+![alt text](image-2.png)
