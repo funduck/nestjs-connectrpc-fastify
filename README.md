@@ -31,10 +31,12 @@ To compile proto files if you change them
 $ pnpm run compile-proto
 ```
 
-
 ## Compile and run the test
 
 ```bash
 $ pnpm run test
 ```
 
+<video width="900" controls>
+  <source src="tests.mp4" type="video/mp4">
+</video>

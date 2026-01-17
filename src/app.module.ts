@@ -1,6 +1,4 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { Logger } from '@nestjs/common';
 import { ConnectrpcController } from './connectrpc.controller';
 import { middleware } from './connectrpc-fastify';
@@ -26,9 +24,7 @@ import { ConnectRPCModule } from './nestjs-connectrpc-fastify';
       acceptCompression: [],
     }),
   ],
-  controllers: [AppController],
   providers: [
-    AppService,
     Logger,
     ConnectrpcController,
     LoggerMiddleware,
