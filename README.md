@@ -8,7 +8,49 @@
 This is an example of production integration of [ConnectRPC](https://github.com/connectrpc/connect-es) for Nodejs into 
 [Nest](https://github.com/nestjs/nest) framework.
 
-Start reading from `src/app.module.ts`
+### Basic example
+Configure `ConnectRPCModule` in some of your modules, usually `app.module.ts` is used for such things:
+```TS
+@Module({
+  imports: [
+    ConnectRPCModule.forRoot({
+        logger: new Logger('ConnectRPC', { timestamp: true }),
+    }),
+  ]
+})
+export class AppModule {}
+```
+
+At least one controller should implement service described in proto
+```TS
+export class ConnectrpcController implements Service<typeof ElizaService> {
+  constructor() {
+    ConnectRPC.registerController(this, ElizaService);
+  }
+
+  async say(
+    request: SayRequest,
+  ) {
+    return {
+      sentence: `You said: ${request.sentence}`,
+    };
+  }
+
+```
+
+And during bootstrap register plugin **after** `app` is created and **before** it is initialized
+```TS
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
+
+  await app.get(ConnectRPCModule).registerPlugin();
+
+  await app.listen(80);
+```
+
+For more details start reading from `src/app.module.ts`
 
 ### Features
 This example shows:
