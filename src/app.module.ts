@@ -27,20 +27,27 @@ import { AuthGuard } from './auth.guard';
     }),
   ],
   providers: [
+    Logger,
+    // Registering a global guard the NestJS way
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
-    Logger,
+
+    // Connectrpc controller is not "http" controller, so we don't put it in "controllers" array
     ConnectrpcController,
-    LoggerMiddleware,
+
+    // We have to provide middlewares here so that NestJS instantiates them before server is started
+    // Otherwise we can't register them in ConnectRPC
     AuthMiddleware,
     DurationMiddleware,
+    // But we have to avoid providing LoggerMiddleware here to prevent double instantiation!
+    // LoggerMiddleware, // If you uncomment this line, you'll see an error thrown at runtime - which is good, double instantiation is dangerous
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Applying middlewares to REST HTTP routes
+    // Applying middlewares to REST HTTP routes the NestJS way
     consumer.apply(LoggerMiddleware).forRoutes('*');
   }
 }

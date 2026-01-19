@@ -8,13 +8,17 @@
 This is an example of production integration of [ConnectRPC](https://github.com/connectrpc/connect-es) for Nodejs into 
 [Nest](https://github.com/nestjs/nest) framework.
 
+Start reading from `src/app.module.ts`
+
 ### Features
 This example shows:
 * rpc with simple request and response messages
 * rpc with stream in response
 * rpc with stream in request
+* how to use middlewares
+* how to use global guards
 
-*RPC with bidirectional stream is out of current scope because it requires HTTP/2 which is unstable in public networks. Practice shows much better and (most important) consistent performance over HTTP/1.*
+*RPC with bidirectional stream is out of current scope because it requires HTTP/2 which is unstable in public networks. Practice demostrates more consistent performance over HTTP/1.*
 
 ## Prerequisites
 * Nodejs
@@ -38,6 +42,7 @@ $ pnpm run test
 ```
 
 ## Test output
-![alt text](image.png)
-![alt text](image-1.png)
-![alt text](image-2.png)
+![](image.png)
+![](image-1.png)
+![](image-2.png)
+![](image-3.png)

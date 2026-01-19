@@ -8,7 +8,7 @@ export class LoggerMiddleware implements NestMiddleware {
 
   constructor() {
     ConnectRPC.registerMiddleware(this, {
-      allowMultipleInstances: true,
+      allowMultipleInstances: false, // If true, we allow multiple instances of this middleware, but usually we want only one
     });
   }
 
