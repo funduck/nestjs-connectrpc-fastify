@@ -1,5 +1,6 @@
 import type { GenMessage, GenService } from '@bufbuild/protobuf/codegenv2';
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { OmitConnectrpcFields } from './types';
 
 export interface Logger {
   log: (...args: any[]) => void;
@@ -35,15 +36,21 @@ type ExtractOutput<T> = T extends { output: GenMessage<infer M> } ? M : never;
  * Convert a service method to a controller method signature
  */
 type ServiceMethod<T> = T extends { methodKind: 'unary' }
-  ? (request: ExtractInput<T>) => Promise<ExtractOutput<T>>
+  ? (
+      request: ExtractInput<T>,
+    ) => Promise<OmitConnectrpcFields<ExtractOutput<T>>>
   : T extends { methodKind: 'server_streaming' }
-    ? (request: ExtractInput<T>) => AsyncIterable<ExtractOutput<T>>
+    ? (
+        request: ExtractInput<T>,
+      ) => AsyncIterable<OmitConnectrpcFields<ExtractOutput<T>>>
     : T extends { methodKind: 'client_streaming' }
-      ? (request: AsyncIterable<ExtractInput<T>>) => Promise<ExtractOutput<T>>
+      ? (
+          request: AsyncIterable<ExtractInput<T>>,
+        ) => Promise<OmitConnectrpcFields<ExtractOutput<T>>>
       : T extends { methodKind: 'bidi_streaming' }
         ? (
             request: AsyncIterable<ExtractInput<T>>,
-          ) => AsyncIterable<ExtractOutput<T>>
+          ) => AsyncIterable<OmitConnectrpcFields<ExtractOutput<T>>>
         : never;
 
 /**
