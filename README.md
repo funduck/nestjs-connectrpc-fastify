@@ -46,3 +46,6 @@ $ pnpm run test
 ![](image-1.png)
 ![](image-2.png)
 ![](image-3.png)
+
+## Feedback
+Please use [Discussions](https://github.com/funduck/nestjs-connectrpc-fastify/discussions) or email me.
