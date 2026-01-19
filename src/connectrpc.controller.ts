@@ -10,15 +10,20 @@ import {
 } from 'gen/connectrpc/eliza/v1/eliza_pb';
 import { create } from '@bufbuild/protobuf';
 import { ConnectRPC, Service } from './connectrpc-fastify';
+import { SkipAuthGuard } from './auth.guard';
 
 export class ConnectrpcController implements Service<typeof ElizaService> {
   constructor() {
     ConnectRPC.registerController(this, ElizaService);
   }
+
   /**
    * Unary RPC: Say
    * Client sends one request, server sends one response
+   *
+   * For demonstration, this method is decorated with @SkipAuthGuard to bypass authentication.
    */
+  @SkipAuthGuard()
   async say(request: SayRequest): Promise<SayResponse> {
     return create(SayResponseSchema, {
       sentence: `You said: ${request.sentence}`,

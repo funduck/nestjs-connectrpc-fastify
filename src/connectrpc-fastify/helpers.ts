@@ -1,5 +1,6 @@
 import { GenService } from '@bufbuild/protobuf/codegenv2';
 import { FastifyRequest, FastifyReply } from 'fastify';
+import { Logger } from './interfaces';
 
 /**
  * Automatically discover method mappings by matching service methods to controller methods
@@ -68,7 +69,23 @@ export function convertMiddlewareToHook(
   };
 }
 
-export let logger = console;
+export let logger: Logger = {
+  log: (...args: any[]) => {
+    console.info(...args);
+  },
+  error: (...args: any[]) => {
+    console.error(...args);
+  },
+  warn: (...args: any[]) => {
+    console.warn(...args);
+  },
+  debug: (...args: any[]) => {
+    console.debug(...args);
+  },
+  verbose: (...args: any[]) => {
+    console.log(...args);
+  },
+};
 
 export function setLogger(customLogger: Logger) {
   logger = customLogger;

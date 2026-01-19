@@ -25,6 +25,8 @@
 
 [x] allow using middleware
 
-[] allow using guards
+[] allow using global guards
+
+[] allow controller specific guards
  
 refactor project to library

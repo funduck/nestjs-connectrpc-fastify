@@ -9,3 +9,6 @@ export { middleware } from './interfaces';
 
 // Export main ConnectRPC module
 export { ConnectRPC } from './connectrpc';
+
+// Export guards initialization
+export { initGuards } from './guards';

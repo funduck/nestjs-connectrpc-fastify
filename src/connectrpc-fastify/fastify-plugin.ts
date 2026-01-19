@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify';
-import { ControllersStore } from './stores';
+import { ControllersStore, RouteMetadataStore } from './stores';
 import { discoverMethodMappings, logger } from './helpers';
 import { ConnectRouter } from '@connectrpc/connect';
 import { fastifyConnectPlugin } from '@connectrpc/connect-fastify';
 import { GenService } from '@bufbuild/protobuf/codegenv2';
 import { Compression } from '@connectrpc/connect/protocol';
+import { getGuards } from './guards';
 
 export async function registerFastifyPlugin(
   server: FastifyInstance,
@@ -16,6 +17,13 @@ export async function registerFastifyPlugin(
   const implementations = new Map<GenService<any>, any>();
 
   for (const { instance, service } of ControllersStore.values()) {
+    const guards = getGuards(instance);
+    if (guards.length > 0) {
+      logger.log(
+        `Found ${guards.length} guards on controller ${instance.constructor.name}`,
+      );
+    }
+
     const methodMappings = discoverMethodMappings(instance.__proto__, service);
 
     // Create the implementation object
@@ -34,7 +42,21 @@ export async function registerFastifyPlugin(
 
         if (controllerMethod) {
           // Bind the method with proper 'this' context
-          implementation[methodName] = controllerMethod.bind(instance);
+          const bindedMethod = controllerMethod.bind(instance);
+          implementation[methodName] = (...args: any[]) => {
+            return bindedMethod(...args);
+          };
+
+          // Store route metadata for guards and interceptors
+          RouteMetadataStore.registerRoute(
+            service.typeName,
+            name, // PascalCase method name (e.g., "Say")
+            instance.constructor,
+            controllerMethod,
+            controllerMethodName,
+            instance,
+          );
+
           logger.log(
             `Binding ${instance.constructor.name}.${controllerMethodName} to ${service.typeName}.${name}`,
           );

@@ -140,3 +140,29 @@ export function middleware<T extends GenService<any>>(
     methods,
   };
 }
+
+export interface ExecutionContext {
+  getClass<T = any>(): Type<T>;
+
+  getHandler(): Function;
+
+  getArgs<T extends Array<any> = any[]>(): T;
+
+  getArgByIndex<T = any>(index: number): T;
+
+  switchToHttp(): {
+    getRequest(): FastifyRequest['raw'];
+    getResponse(): FastifyReply['raw'];
+    getNext<T = any>(): () => T;
+  };
+
+  // Adding these two only for compatibility with NestJS ExecutionContext
+  // Implementations will throw error
+  switchToRpc(): any;
+
+  switchToWs(): any;
+}
+
+export interface Guard {
+  canActivate(context: ExecutionContext): boolean | Promise<boolean>;
+}

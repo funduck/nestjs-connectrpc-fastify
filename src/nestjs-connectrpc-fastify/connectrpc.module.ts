@@ -17,8 +17,10 @@ const CONNECTRPC_MODULE_OPTIONS = Symbol('CONNECTRPC_MODULE_OPTIONS');
  *
  * Call registerPlugin() after app initialization and before server starts listening
  *
+ * ## Middlewares
  * To register middlewares, use ConnectRPC.registerMiddleware() in the middleware constructors
- * and provide the middlewares in the ConnectRPCModule options
+ * and provide the middlewares in the ConnectRPCModule options.
+ *
  * Example:
  * ```typescript
  * @Injectable()
@@ -41,13 +43,53 @@ const CONNECTRPC_MODULE_OPTIONS = Symbol('CONNECTRPC_MODULE_OPTIONS');
  *     ConnectRPCModule.forRoot({
  *       middlewares: [
  *         middleware(MyMiddleware),
- *        middleware(AnotherMiddleware, ),
+ *         middleware(AnotherMiddleware),
  *       ],
  *     }),
  *   ],
  * })
  * export class AppModule {}
  * ```
+ *
+ * ## Guards
+ * Guards are automatically initialized and executed after all middlewares.
+ * To register guards, use ConnectRPC.registerGuard() in the guard constructor.
+ *
+ * Example:
+ * ```typescript
+ * @Injectable()
+ * export class AuthGuard implements CanActivate {
+ *   constructor() {
+ *     ConnectRPC.registerGuard(this);
+ *   }
+ *
+ *   canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+ *     const request = context.switchToHttp().getRequest();
+ *     const handler = context.getHandler();
+ *     const controller = context.getClass();
+ *
+ *     // Your guard logic here
+ *     return true;
+ *   }
+ * }
+ * ```
+ *
+ * Guards have access to:
+ * - `context.getClass()` - The controller class
+ * - `context.getHandler()` - The controller method
+ * - `context.switchToHttp().getRequest()` - The Fastify request object
+ * - `context.switchToHttp().getResponse()` - The Fastify response object
+ *
+ * You can use decorators with Reflect metadata to skip guards on specific methods:
+ * ```typescript
+ * @SkipAuthGuard()
+ * async say(request: SayRequest): Promise<SayResponse> {
+ *   // This method will skip the AuthGuard
+ * }
+ * ```
+ *
+ * Guards are applied globally to all routes. If a guard returns false or throws an error,
+ * the request will be rejected with a 403 Forbidden response.
  */
 @Module({})
 export class ConnectRPCModule implements OnModuleInit {
@@ -126,6 +168,11 @@ export class ConnectRPCModule implements OnModuleInit {
     }
 
     const server = this.getServer();
+
+    // Initialize middlewares first
     await ConnectRPC.initMiddlewares(server, this.options.middlewares || []);
+
+    // Initialize guards after middlewares
+    await ConnectRPC.initGuards(server);
   }
 }

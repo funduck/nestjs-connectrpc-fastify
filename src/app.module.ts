@@ -7,6 +7,8 @@ import { AuthMiddleware } from './auth.middleware';
 import { ElizaService } from '../gen/connectrpc/eliza/v1/eliza_pb';
 import { DurationMiddleware } from './duration.middleware';
 import { ConnectRPCModule } from './nestjs-connectrpc-fastify';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from './auth.guard';
 
 @Module({
   imports: [
@@ -25,6 +27,10 @@ import { ConnectRPCModule } from './nestjs-connectrpc-fastify';
     }),
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
     Logger,
     ConnectrpcController,
     LoggerMiddleware,
