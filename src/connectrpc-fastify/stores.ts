@@ -1,5 +1,5 @@
-import { GenService } from '@bufbuild/protobuf/codegenv2';
-import { Guard, Middleware, Type } from './interfaces';
+import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
+import { Guard, Middleware, Service, Type } from './interfaces';
 
 class ControllersStoreClass {
   private controllers = new Map<
@@ -17,9 +17,9 @@ class ControllersStoreClass {
     }));
   }
 
-  registerInstance(
-    self: Function,
-    service: GenService<any>,
+  registerInstance<T extends GenServiceMethods>(
+    self: Service<GenService<T>>,
+    service: GenService<T>,
     {
       allowMultipleInstances = false,
     }: {

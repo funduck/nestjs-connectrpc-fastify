@@ -1,15 +1,17 @@
 import { ControllersStore, GuardsStore, MiddlewareStore } from './stores';
-import { GenService } from '@bufbuild/protobuf/codegenv2';
+import { GenService, GenServiceMethods } from '@bufbuild/protobuf/codegenv2';
 import { FastifyInstance } from 'fastify';
 import { registerFastifyPlugin } from './fastify-plugin';
 import { setLogger } from './helpers';
-import { Logger, Middleware, MiddlewareConfig } from './interfaces';
+import {
+  Guard,
+  Logger,
+  Middleware,
+  MiddlewareConfig,
+  Service,
+} from './interfaces';
 import { initMiddlewares } from './middlewares';
 import { initGuards } from './guards';
-
-interface Guard {
-  canActivate(context: any): boolean | Promise<boolean>;
-}
 
 class ConnectRPCClass {
   setLogger(customLogger: Logger) {
@@ -25,9 +27,13 @@ class ConnectRPCClass {
     MiddlewareStore.registerInstance(self, options);
   }
 
-  registerController(
-    self: any,
-    service: GenService<any>,
+  /**
+   * @param self - instance of controller
+   * @param service - generated service that is implemented by controller
+   */
+  registerController<T extends GenServiceMethods>(
+    self: Service<GenService<T>>,
+    service: GenService<T>,
     options?: {
       allowMultipleInstances?: boolean;
     },
@@ -48,14 +54,29 @@ class ConnectRPCClass {
     return registerFastifyPlugin(server);
   }
 
+  private _middlewaresInitialized = false;
+
   initMiddlewares(
     server: FastifyInstance,
     middlewareConfigs: MiddlewareConfig[],
   ) {
+    if (this._middlewaresInitialized) {
+      throw new Error('Middlewares have already been initialized!');
+    }
+    if (this._guardsInitialized) {
+      throw new Error('Middlewares must be initialized before guards!');
+    }
+    this._middlewaresInitialized = true;
     return initMiddlewares(server, middlewareConfigs);
   }
 
+  private _guardsInitialized = false;
+
   initGuards(server: FastifyInstance) {
+    if (this._guardsInitialized) {
+      throw new Error('Guards have already been initialized!');
+    }
+    this._guardsInitialized = true;
     return initGuards(server);
   }
 }

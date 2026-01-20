@@ -61,7 +61,7 @@ type ServiceMethod<T> = T extends { methodKind: 'unary' }
  *
  * Usage:
  * ```typescript
- * export class ElizaController implements ConnectRPCService<typeof ElizaService> {
+ * export class ElizaController implements Service<typeof ElizaService> {
  *   constructor() {
  *     ConnectRPC.registerController(this, ElizaService);
  *   }
